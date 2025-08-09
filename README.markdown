@@ -1,3 +1,4 @@
+![Alt text](workflow.png)
 # ADGM Corporate Agent - AI-Powered Document Compliance System
 
 ## Project Overview
