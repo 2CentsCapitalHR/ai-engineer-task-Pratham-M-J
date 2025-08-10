@@ -5,6 +5,8 @@
 ## Project Overview
 The ADGM Corporate Agent is an advanced AI-powered multi-agent system designed to automate corporate document processing and ensure compliance with Abu Dhabi Global Market (ADGM) regulations. This enterprise-grade solution streamlines the entire document lifecycle, from classification to compliance correction, ensuring full regulatory adherence for ADGM corporate submissions.
 
+## Check out the detailed live demonstration here 
+[Click here](https://drive.google.com/file/d/1hxOisdAmwSeI9NL1V9TkwnHTx701uZXR/view?usp=sharing)
 ## Key Features
 
 ### Document Classification and Analysis
