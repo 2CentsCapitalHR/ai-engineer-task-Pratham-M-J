@@ -99,6 +99,15 @@ The system employs a modular, multi-agent architecture to ensure efficient proce
    - **SimpleFileWriterTool**: Clean output of corrected files.
    - **DocumentRewriterTool**: Comprehensive document rewriting with tracking.
 
+5. **Web Scraping Capability (Not Implemented)**
+
+A web scraping tool was intentionally not implemented for the ADGM Corporate Agent, as the target ADGM government websites (e.g., adgm.com and the regulations portal) are official government resources. However, this capability could be seamlessly integrated to enable the following functionalities:
+
+- **Real-Time Regulatory Updates Monitoring**: Continuously track changes to ADGM regulations and guidelines.
+- **Automatic Knowledge Base Synchronization**: Update the system's regulatory knowledge base with the latest information from official sources.
+- **Template Validation Against Official ADGM Forms**: Ensure document templates align with current ADGM standards.
+- **Regulatory Change Detection and Alert System**: Identify and notify users of significant regulatory updates or amendments.
+
 ## Workflow Demonstration
 ### Input Example
 Input documents are placed in the `/documents` directory, including:
