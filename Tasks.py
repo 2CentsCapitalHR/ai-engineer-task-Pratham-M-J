@@ -89,47 +89,39 @@ red_flag_analysis = Task(
  
 )
 
-
-
 document_rewriting = Task(
     description=(
-        "1. Analyze the red flag violations from the previous compliance analysis\n"
-        "2. For each document with violations, generate specific compliance fixes:\n"
-        "   - Create exact replacement text that meets ADGM standards\n"
-        "   - Write detailed comments explaining each compliance fix\n"
-        "   - Classify severity levels for each correction\n"
-        "3. Use Document Rewriter Tool to apply all fixes to the uploaded documents\n"
-        "4. Generate comprehensive JSON report of all edits made\n"
-        "5. Save corrected documents with compliance annotations\n\n"
-        "MANDATORY: Process all documents that had compliance violations identified in the previous analysis."
+        "1. Read all original documents using read_files_tool\n"
+        "2. Extract violations from previous red flag analysis\n"
+        "3. For each document with violations:\n"
+        "   - Create corrected version of ENTIRE document\n"
+        "   - Highlight all corrections with severity colors\n"
+        "   - Add detailed compliance comments\n"
+        "4. Use DocumentRewriterTool to generate:\n"
+        "   - Corrected DOCX files in /corrected_documents/\n"
+        "   - Individual JSON reports for each file\n"
+        "   - Master compliance_corrections_report.json\n"
+        "5. Ensure ALL documents are completely rewritten, not just edited"
     ),
     expected_output=(
-        "ADGM Document Rewriting Report:\n\n"
-        "DOCUMENTS CORRECTED:\n"
-        "- List of documents processed with edit counts\n"
-        "- Severity breakdown of fixes applied\n\n"
+        "Document Rewriting Results:\n\n"
+        "FILES GENERATED:\n"
+        "- CORRECTED_[filename].docx for each processed document\n"
+        "- [filename]_corrections.json for each file\n"
+        "- compliance_corrections_report.json (master report)\n\n"
         
-        "CRITICAL FIXES APPLIED:\n"
-        "- Jurisdiction corrections (UAE Federal → ADGM Courts)\n"
-        "- Registered office corrections\n"
-        "- Missing signature additions\n\n"
+        "CORRECTIONS SUMMARY:\n"
+        "- Total documents rewritten: [X]\n"
+        "- Total corrections applied: [X]\n"
+        "- Critical fixes: [X]\n"
+        "- High priority fixes: [X]\n\n"
         
-        "HIGH PRIORITY FIXES:\n"
-        "- Beneficial ownership disclosures added\n"
-        "- Joint signatory requirements implemented\n"
-        "- Director appointment procedures corrected\n\n"
-        
-        "COMPLIANCE SUMMARY:\n"
-        "- Total edits made across all documents\n"
-        "- JSON report location with detailed change log\n"
-        "- Corrected documents directory path\n"
-        "- Overall compliance improvement assessment\n\n"
-        
-        "OUTPUT FILES:\n"
-        "- /corrected_documents/ folder with fixed DOCX files\n"
-        "- compliance_edit_report.json with detailed change tracking"
+        "OUTPUT LOCATIONS:\n"
+        "- Corrected documents: /corrected_documents/\n"
+        "- JSON reports: /corrected_documents/\n"
+        "- All files saved successfully with full content rewrite"
     ),
-    name="ADGM Document Compliance Rewriting",
+    name="Complete Document Rewriting with JSON Reports",
     agent=DocumentRewriterAgent,
-    context=[red_flag_analysis]  # Gets violations from Red Flag Analyzer
+    context=[red_flag_analysis]
 )

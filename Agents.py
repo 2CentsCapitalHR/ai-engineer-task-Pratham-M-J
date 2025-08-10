@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from file_classifier_tool import ADGMDocumentClassifierTool 
 from adgm_rag_tool import ADGMRAGTool
 from file_read_tool import SimpleFileReaderTool
-from rewrite_tool import DocumentRewriterTool
+from rewrite_tool import SimpleFileWriterTool
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 load_dotenv()
@@ -14,7 +14,7 @@ openai_api_key = os.getenv("OPEN_AI_KEY")
 file_classifier_tool = ADGMDocumentClassifierTool()
 adgm_rag_tool = ADGMRAGTool()
 read_files_tool = SimpleFileReaderTool()
-rewrite_tool = DocumentRewriterTool()
+rewrite_tool = SimpleFileWriterTool()
 
 DocumentClassifier = Agent(
     role="Document Classifier",
@@ -49,7 +49,6 @@ RedFlagAnalyzer = Agent(
         "violations that could lead to application rejections or regulatory penalties.\n\n"
         "Proceed with the valid documents available, only deprecate if no valid documents are provided.\n\n"
         "You need to give an analysis or report all the available compulsorily"
-        "But limit the RAG call to 10 questions, continue with the available informatio"
 
         "ANALYSIS METHODOLOGY:\n"
         "You work systematically through each document type using your RAG knowledge base to retrieve "
@@ -130,36 +129,38 @@ ReportGenerator = Agent(
 )
 
 
-
 DocumentRewriterAgent = Agent(
-    role="ADGM Document Compliance Rewriter",
-    goal="Rewrite ADGM documents to fix compliance violations and generate comprehensive edit reports",
+    role="ADGM Document Rewriter",
+    goal="Read files one by one, apply red flag corrections, and generate JSON report",
     backstory=(
-        "You are a senior ADGM corporate lawyer and compliance specialist with expertise in document drafting. "
-        "Your specialty is taking compliance violation reports and rewriting corporate documents to fix all identified issues.\n\n"
-        "You should read the previous content using read_files_tool and rewrite the documents using rewrite_tool.\n\n"
-
-        "REWRITING METHODOLOGY:\n"
-        "1. Receive red flag analysis from the previous agent with specific violations\n"
-        "2. For each violation, generate precise replacement text that meets ADGM compliance standards\n"
-        "3. Create detailed comments explaining why each change was necessary\n"
-        "4. Classify the severity of each fix (CRITICAL/HIGH/MEDIUM/LOW)\n"
-        "5. Use the Document Rewriter Tool to apply changes and track edits\n\n"
+        "You are a document correction specialist. Follow this EXACT process:\n\n"
         
-        "COMPLIANCE FIX STANDARDS:\n"
-        "- CRITICAL: UAE Federal Court → ADGM Courts jurisdiction\n"
-        "- CRITICAL: Non-ADGM addresses → Proper ADGM registered office\n"
-        "- HIGH: Missing beneficial ownership → 25%+ disclosure requirements\n"
-        "- HIGH: Single signatories → Joint signing authorities\n"
-        "- MEDIUM: Formatting issues → Professional document structure\n"
-        "- LOW: Minor text improvements → Enhanced clarity\n\n"
+        "STEP-BY-STEP PROCESS:\n"
+        "1. Use read_files_tool to get all document contents\n"
+        "2. From previous agent context, extract red flag violations for each file\n"
+        "3. For EACH file with violations:\n"
+        "   a. Get original content from read_files_tool result\n"
+        "   b. Create corrections list with old/new text pairs\n"
+        "   c. Use SimpleDocumentRewriterTool to rewrite the file\n"
+        "   d. Store the result\n"
+        "4. After processing ALL files, compile final JSON report\n\n"
         
-        "OUTPUT REQUIREMENTS:\n"
-        "1. Generate rewrite_instructions for the Document Rewriter Tool\n"
-        "2. Provide specific replacement text for each violation\n"
-        "3. Include detailed compliance explanations\n"
-        "4. Ensure all fixes meet ADGM regulatory standards\n"
-        "5. Generate comprehensive JSON report of all changes made"
+        "CORRECTION FORMAT:\n"
+        "For each violation, create: {\n"
+        "  'old': 'original problematic text',\n"
+        "  'new': 'ADGM compliant replacement',\n"
+        "  'reason': 'why this change was needed',\n"
+        "  'severity': 'CRITICAL/HIGH/MEDIUM/LOW'\n"
+        "}\n\n"
+        
+        "EXAMPLES:\n"
+        "- 'UAE Federal Courts' → 'ADGM Courts' (CRITICAL)\n"
+        "- 'Dubai address' → 'ADGM address' (CRITICAL)\n"
+        "- Single signatory → Joint signatories (HIGH)\n\n"
+        
+        "IMPORTANT: Process each file individually, don't skip any files with violations."
+        "IMPORTANT: strictly provide the output in the specified JSON format and also the corrected file in the /corrected_documents directory."
+        "IMPORTANT: Along with JSON report, include the corected format output as well"
     ),
     allow_delegation=False,
     verbose=True,

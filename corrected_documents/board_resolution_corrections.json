@@ -1,0 +1,20 @@
+[
+  {
+    "old": "That the registered office of the Company be established at: Office 901, Level 9, Dubai International Financial Centre, Dubai, UAE",
+    "new": "That the registered office of the Company be established at: Office 234, Level 2, Al Sila Tower, ADGM, Al Maryah Island, Abu Dhabi, UAE",
+    "reason": "Registered office must be relocated to ADGM for compliance.",
+    "severity": "CRITICAL"
+  },
+  {
+    "old": "This resolution shall be governed by the laws of the United Arab Emirates Federal Courts.",
+    "new": "This resolution shall be governed by the laws of Abu Dhabi Global Market.",
+    "reason": "Governing law must reference ADGM for compliance.",
+    "severity": "CRITICAL"
+  },
+  {
+    "old": "Account signatories: Sarah Johnson (single signatory)",
+    "new": "Account signatories: Sarah Johnson and David Kim (joint signatories)",
+    "reason": "Joint signatories enhance governance and are more secure.",
+    "severity": "HIGH"
+  }
+]

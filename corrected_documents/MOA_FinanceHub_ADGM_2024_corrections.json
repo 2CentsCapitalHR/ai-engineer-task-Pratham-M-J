@@ -1,0 +1,26 @@
+[
+  {
+    "old": "The registered office of the Company is situated in Dubai International Financial Centre at: Office 567, Level 8, DIFC Building, Dubai, UAE.",
+    "new": "The registered office of the Company is situated at: Office 123, Level 1, Al Sila Tower, ADGM Square, Al Maryah Island, Abu Dhabi, UAE.",
+    "reason": "Registered office must be within ADGM for compliance.",
+    "severity": "CRITICAL"
+  },
+  {
+    "old": "To provide financial advisory services under UAE Federal jurisdiction",
+    "new": "To provide financial advisory services under ADGM jurisdiction",
+    "reason": "Company activities must be under ADGM jurisdiction for compliance.",
+    "severity": "CRITICAL"
+  },
+  {
+    "old": "The Company is incorporated under the UAE Commercial Companies Law and subject to UAE Federal Courts jurisdiction.",
+    "new": "The Company is incorporated under ADGM Regulations 2020.",
+    "reason": "Incorporation details must reflect ADGM regulations.",
+    "severity": "CRITICAL"
+  },
+  {
+    "old": "This Memorandum shall be governed by UAE Federal Law and disputes resolved in UAE Federal Courts.",
+    "new": "This Memorandum shall be governed by the laws of Abu Dhabi Global Market and disputes resolved in ADGM Courts.",
+    "reason": "Governing law and jurisdiction must be ADGM compliant.",
+    "severity": "CRITICAL"
+  }
+]
