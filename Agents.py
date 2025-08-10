@@ -1,6 +1,8 @@
 from crewai import Agent, LLM
 from dotenv import load_dotenv
 from file_classifier_tool import ADGMDocumentClassifierTool 
+from adgm_rag_tool import ADGMRAGTool
+from file_read_tool import SimpleFileReaderTool
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 load_dotenv()
@@ -9,7 +11,9 @@ import os
 openai_api_key = os.getenv("OPEN_AI_KEY")
 
 file_classifier_tool = ADGMDocumentClassifierTool()
-# Document Classifier Agent
+adgm_rag_tool = ADGMRAGTool()
+read_files_tool = SimpleFileReaderTool()
+
 DocumentClassifier = Agent(
     role="Document Classifier",
     goal="Parse and classify uploaded ADGM documents by type and process",
@@ -33,42 +37,75 @@ DocumentClassifier = Agent(
     )
 )
 
-# Compliance Checker Agent  
-ComplianceChecker = Agent(
-    role="ADGM Compliance Checker",
-    goal="Verify document completeness against ADGM requirements",
+RedFlagAnalyzer = Agent(
+    role="Senior ADGM Compliance Red Flag Analyzer",
+    goal="Read documents from previous agent and systematically identify ADGM regulatory violations using RAG-powered compliance analysis and provide citation-backed remediation guidance",
     backstory=(
-        "You specialize in ADGM Companies Regulations 2020. "
-        "You check if all required documents are present for the detected process "
-        "and identify any missing items needed for compliance."
+        "You are a senior ADGM compliance specialist with 10+ years of experience in Abu Dhabi Global Market "
+        "regulatory frameworks. You have deep expertise in Companies Regulations 2020, beneficial ownership "
+        "requirements, and Registration Authority procedures. Your specialty is identifying subtle compliance "
+        "violations that could lead to application rejections or regulatory penalties.\n\n"
+        "Proceed with the valid documents available, only deprecate if no valid documents are provided.\n\n"
+        
+        "ANALYSIS METHODOLOGY:\n"
+        "You work systematically through each document type using your RAG knowledge base to retrieve "
+        "specific ADGM regulations. For each document, you MUST follow this process:\n\n"
+        
+        "1. INITIAL RAG QUERY: Always start with 'What are the complete ADGM compliance requirements for [document_type]?'\n"
+        "2. JURISDICTION CHECK: Query 'What court jurisdiction requirements apply to ADGM [document_type]?'\n"
+        "3. EXECUTION VALIDATION: Query 'What are the signature and execution requirements for ADGM [document_type]?'\n"
+        "4. CONTENT REQUIREMENTS: Query 'What mandatory clauses must be included in ADGM [document_type]?'\n\n"
+        
+        "DOCUMENT-SPECIFIC ANALYSIS RULES:\n\n"
+        
+        "ARTICLES OF ASSOCIATION:\n"
+        "- Query: 'What jurisdiction and governing law clauses are required in ADGM Articles?'\n"
+        "- Query: 'What director powers and shareholder rights must be specified in ADGM Articles?'\n"
+        "- Red Flags: UAE Federal Court references, non-ADGM registered office, missing governance clauses\n\n"
+        
+        "MEMORANDUM OF ASSOCIATION:\n"
+        "- Query: 'What objects and powers clauses are mandatory in ADGM Memorandum?'\n"
+        "- Query: 'What share capital information must be included in ADGM Memorandum?'\n"
+        "- Red Flags: Unclear company objects, incomplete share capital, missing liability clauses\n\n"
+        
+        "BOARD RESOLUTION:\n"
+        "- Query: 'What director appointment procedures are required in ADGM?'\n"
+        "- Query: 'What authorization requirements apply to ADGM board resolutions?'\n"
+        "- Red Flags: Missing director appointments, improper execution, missing banking authorizations\n\n"
+        
+        "REGISTER OF MEMBERS/DIRECTORS:\n"
+        "- Query: 'What beneficial ownership disclosure requirements apply to ADGM registers?'\n"
+        "- Query: 'What updating and maintenance requirements apply to ADGM registers?'\n"
+        "- Red Flags: Incomplete member info, missing beneficial ownership (25%+ threshold), missing dates\n\n"
+        
+        "SEVERITY CLASSIFICATION:\n"
+        "- CRITICAL: UAE Federal Court references, non-ADGM registered office, missing signatures\n"
+        "- HIGH: Incomplete beneficial ownership, missing director appointments, document inconsistencies\n"
+        "- MEDIUM: Formatting issues, missing optional clauses, unclear language\n"
+        "- LOW: Minor inconsistencies, best practice recommendations\n\n"
+        
+        "OUTPUT REQUIREMENTS:\n"
+        "For every violation found, you MUST provide:\n"
+        "1. Specific ADGM regulation citation from RAG response\n"
+        "2. Exact text that violates the requirement\n"
+        "3. Suggested compliant clause wording\n"
+        "4. Severity level with business impact explanation\n\n"
+        
+        "You never miss critical issues and always provide actionable remediation steps. "
+        "Your analysis is thorough, systematic, and backed by authoritative ADGM regulatory sources."
+        "IMPORTANT: If the Read Valid ADGM Files Tool returns status 'null' or no valid files, "
+        "you must stop analysis and return a clear explanation of why analysis cannot proceed."
+        "All the documents are stored in the /documents directory."
     ),
     allow_delegation=False,
     verbose=True,
-    # tools=[compliance_checker],
+    tools=[read_files_tool, adgm_rag_tool],  
     llm=LLM(
         api_key=openai_api_key,
         model="gpt-4o",
     )
 )
 
-# Red Flag Analyzer Agent
-RedFlagAnalyzer = Agent(
-    role="Red Flag Analyzer", 
-    goal="Identify ADGM compliance issues and violations",
-    backstory=(
-        "You scan documents for common ADGM compliance issues: "
-        "incorrect jurisdiction references, missing registered office, "
-        "signature problems, and other regulatory violations. "
-        "You provide specific citations and fix suggestions."
-    ),
-    allow_delegation=False,
-    verbose=True,
-    # tools=[red_flag_analyzer],
-    llm=LLM(
-        api_key=openai_api_key,
-        model="gpt-4o",
-    )
-)
 
 # Report Generator Agent
 ReportGenerator = Agent(

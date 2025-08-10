@@ -6,6 +6,7 @@ from langchain.prompts import PromptTemplate
 import os
 import re
 
+
 class ADGMDocumentClassifierTool(BaseTool):
     name: str = "ADGM Document Classifier"
     description: str = "Classifies ADGM corporate documents and checks for completeness"
@@ -42,18 +43,30 @@ class ADGMDocumentClassifierTool(BaseTool):
             model='llama-3.1-8b-instant'
         )
         
+        # Improved prompt template
         prompt_template = """
-You are an ADGM corporate document classification AI.
+You are an ADGM corporate document classifier. Analyze the filename and content to classify the document.
 
-Given a document's filename and content preview, classify the document type.
+Filename: {filename}
+Content: {content}
 
-**Filename:** {filename}
-**Content Preview:** {content}
+ADGM Document Types:
+1. Articles of Association - Company governance, director powers, shareholder rights
+2. Memorandum of Association - Company formation, objects, share capital, subscribers  
+3. Board Resolution - Director appointments, authorizations, corporate decisions
+4. Register of Members - Shareholder information, share ownership
+5. Register of Directors - Director details, appointments, addresses
+6. Incorporation Application - ADGM registration application form
 
-**Document Classification:**
-Select one from: Articles of Association, Memorandum of Association, Board Resolution, Register of Members, Register of Directors, Incorporation Application, Unknown
+Classification Rules:
+- Look for keywords in filename: "AOA", "Articles" → Articles of Association
+- Look for keywords in filename: "MOA", "Memorandum" → Memorandum of Association
+- Look for keywords: "Resolution", "Board" → Board Resolution
+- Look for keywords: "Register" + "Directors" → Register of Directors
+- Look for keywords: "Register" + "Members" → Register of Members
+- Look for keywords: "Application", "Incorporation" → Incorporation Application
 
-**Final Classification:** [Document type name only]
+Respond with ONLY the document type name from the list above, or "Unknown" if it doesn't match any category.
 """
         
         prompt = PromptTemplate(
@@ -77,15 +90,10 @@ Select one from: Articles of Association, Memorandum of Association, Board Resol
                     if para.text.strip():
                         content += para.text.strip() + " "
                 
-                # Get classification
-                analysis_result = analysis_chain.invoke({
-                    'filename': filename, 
-                    'content': content[:500]
-                })
+                # Get classification with fallback logic
+                document_type = self._classify_document(filename, content, analysis_chain)
                 
-                # Extract final classification
-                classification_match = re.search(r'\*\*Final Classification:\*\*\s*(.+?)(?:\n|$)', analysis_result.content)
-                document_type = classification_match.group(1).strip() if classification_match else "Unknown"
+                print(f"🔍 Classifying {filename} → {document_type}")  # Debug output
                 
                 classified_documents.append({
                     "filename": filename,
@@ -117,3 +125,82 @@ Select one from: Articles of Association, Memorandum of Association, Board Resol
             "total_files_processed": len(file_paths),
             "status": "success"
         }
+    
+    def _classify_document(self, filename: str, content: str, analysis_chain) -> str:
+        """Enhanced classification with fallback logic"""
+        
+        filename_lower = filename.lower()
+        content_lower = content.lower()
+        
+        # Rule-based classification first (more reliable)
+        if "aoa" in filename_lower or "articles" in filename_lower:
+            return "Articles of Association"
+        
+        if "moa" in filename_lower or "memorandum" in filename_lower:
+            return "Memorandum of Association"
+        
+        if "resolution" in filename_lower:
+            return "Board Resolution"
+        
+        if "register" in filename_lower:
+            if "director" in filename_lower:
+                return "Register of Directors"
+            elif "member" in filename_lower:
+                return "Register of Members"
+        
+        if "incorporation" in filename_lower or "application" in filename_lower:
+            return "Incorporation Application"
+        
+        # Content-based classification (fallback)
+        content_patterns = {
+            "Articles of Association": ["articles of association", "company governance", "director powers", "articles", "aoa"],
+            "Memorandum of Association": ["memorandum of association", "company objects", "share capital", "memorandum", "moa"],
+            "Board Resolution": ["resolution", "resolved", "board of directors", "board resolution"],
+            "Register of Directors": ["register of directors", "director details", "director information"],
+            "Register of Members": ["register of members", "shareholder", "member information"],
+            "Incorporation Application": ["incorporation application", "application for", "registration authority"]
+        }
+        
+        for doc_type, patterns in content_patterns.items():
+            if any(pattern in content_lower for pattern in patterns):
+                return doc_type
+        
+        # LLM classification as last resort
+        try:
+            llm_result = analysis_chain.invoke({
+                'filename': filename, 
+                'content': content[:500]
+            })
+            
+            # Multiple regex patterns to catch LLM response
+            llm_response = llm_result.content.strip()
+            
+            # Try different extraction patterns
+            patterns = [
+                r'Final Classification:\s*(.+?)(?:\n|$)',
+                r'Classification:\s*(.+?)(?:\n|$)', 
+                r'^(.+?)(?:\n|$)',  # First line
+                r'(Articles of Association|Memorandum of Association|Board Resolution|Register of Members|Register of Directors|Incorporation Application)',
+            ]
+            
+            for pattern in patterns:
+                match = re.search(pattern, llm_response, re.IGNORECASE)
+                if match:
+                    classification = match.group(1).strip()
+                    # Validate against known document types
+                    valid_types = ["Articles of Association", "Memorandum of Association", 
+                                 "Board Resolution", "Register of Members", 
+                                 "Register of Directors", "Incorporation Application"]
+                    
+                    for valid_type in valid_types:
+                        if valid_type.lower() in classification.lower():
+                            return valid_type
+            
+            return "Unknown"
+            
+        except Exception as e:
+            print(f"⚠️ LLM classification failed for {filename}: {e}")
+            return "Unknown"
+
+
+
