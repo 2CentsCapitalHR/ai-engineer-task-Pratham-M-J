@@ -1,0 +1,11 @@
+crewai
+crewai-tools
+python-docx 
+langchain 
+openai 
+streamlit
+sentence-transformers
+chromadb
+faiss-cpu
+pandas
+numpy

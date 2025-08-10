@@ -1,6 +1,5 @@
 from crewai import Task
-from Agents import DocumentClassifier, RedFlagAnalyzer
-from file_classifier_tool import ADGMDocumentClassifierTool
+from Agents import DocumentClassifier, RedFlagAnalyzer, DocumentRewriterAgent
 from crewai import Task
 
 
@@ -88,4 +87,49 @@ red_flag_analysis = Task(
     name="Conditional Red Flag Analysis with Per-Document Output",
     agent=RedFlagAnalyzer,
  
+)
+
+
+
+document_rewriting = Task(
+    description=(
+        "1. Analyze the red flag violations from the previous compliance analysis\n"
+        "2. For each document with violations, generate specific compliance fixes:\n"
+        "   - Create exact replacement text that meets ADGM standards\n"
+        "   - Write detailed comments explaining each compliance fix\n"
+        "   - Classify severity levels for each correction\n"
+        "3. Use Document Rewriter Tool to apply all fixes to the uploaded documents\n"
+        "4. Generate comprehensive JSON report of all edits made\n"
+        "5. Save corrected documents with compliance annotations\n\n"
+        "MANDATORY: Process all documents that had compliance violations identified in the previous analysis."
+    ),
+    expected_output=(
+        "ADGM Document Rewriting Report:\n\n"
+        "DOCUMENTS CORRECTED:\n"
+        "- List of documents processed with edit counts\n"
+        "- Severity breakdown of fixes applied\n\n"
+        
+        "CRITICAL FIXES APPLIED:\n"
+        "- Jurisdiction corrections (UAE Federal → ADGM Courts)\n"
+        "- Registered office corrections\n"
+        "- Missing signature additions\n\n"
+        
+        "HIGH PRIORITY FIXES:\n"
+        "- Beneficial ownership disclosures added\n"
+        "- Joint signatory requirements implemented\n"
+        "- Director appointment procedures corrected\n\n"
+        
+        "COMPLIANCE SUMMARY:\n"
+        "- Total edits made across all documents\n"
+        "- JSON report location with detailed change log\n"
+        "- Corrected documents directory path\n"
+        "- Overall compliance improvement assessment\n\n"
+        
+        "OUTPUT FILES:\n"
+        "- /corrected_documents/ folder with fixed DOCX files\n"
+        "- compliance_edit_report.json with detailed change tracking"
+    ),
+    name="ADGM Document Compliance Rewriting",
+    agent=DocumentRewriterAgent,
+    context=[red_flag_analysis]  # Gets violations from Red Flag Analyzer
 )

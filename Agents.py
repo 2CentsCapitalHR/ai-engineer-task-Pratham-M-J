@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from file_classifier_tool import ADGMDocumentClassifierTool 
 from adgm_rag_tool import ADGMRAGTool
 from file_read_tool import SimpleFileReaderTool
+from rewrite_tool import DocumentRewriterTool
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 load_dotenv()
@@ -13,6 +14,7 @@ openai_api_key = os.getenv("OPEN_AI_KEY")
 file_classifier_tool = ADGMDocumentClassifierTool()
 adgm_rag_tool = ADGMRAGTool()
 read_files_tool = SimpleFileReaderTool()
+rewrite_tool = DocumentRewriterTool()
 
 DocumentClassifier = Agent(
     role="Document Classifier",
@@ -46,7 +48,9 @@ RedFlagAnalyzer = Agent(
         "requirements, and Registration Authority procedures. Your specialty is identifying subtle compliance "
         "violations that could lead to application rejections or regulatory penalties.\n\n"
         "Proceed with the valid documents available, only deprecate if no valid documents are provided.\n\n"
-        
+        "You need to give an analysis or report all the available compulsorily"
+        "But limit the RAG call to 10 questions, continue with the available informatio"
+
         "ANALYSIS METHODOLOGY:\n"
         "You work systematically through each document type using your RAG knowledge base to retrieve "
         "specific ADGM regulations. For each document, you MUST follow this process:\n\n"
@@ -119,6 +123,47 @@ ReportGenerator = Agent(
     allow_delegation=False,
     verbose=True,
     # tools=[report_generator],
+    llm=LLM(
+        api_key=openai_api_key,
+        model="gpt-4o",
+    )
+)
+
+
+
+DocumentRewriterAgent = Agent(
+    role="ADGM Document Compliance Rewriter",
+    goal="Rewrite ADGM documents to fix compliance violations and generate comprehensive edit reports",
+    backstory=(
+        "You are a senior ADGM corporate lawyer and compliance specialist with expertise in document drafting. "
+        "Your specialty is taking compliance violation reports and rewriting corporate documents to fix all identified issues.\n\n"
+        "You should read the previous content using read_files_tool and rewrite the documents using rewrite_tool.\n\n"
+
+        "REWRITING METHODOLOGY:\n"
+        "1. Receive red flag analysis from the previous agent with specific violations\n"
+        "2. For each violation, generate precise replacement text that meets ADGM compliance standards\n"
+        "3. Create detailed comments explaining why each change was necessary\n"
+        "4. Classify the severity of each fix (CRITICAL/HIGH/MEDIUM/LOW)\n"
+        "5. Use the Document Rewriter Tool to apply changes and track edits\n\n"
+        
+        "COMPLIANCE FIX STANDARDS:\n"
+        "- CRITICAL: UAE Federal Court → ADGM Courts jurisdiction\n"
+        "- CRITICAL: Non-ADGM addresses → Proper ADGM registered office\n"
+        "- HIGH: Missing beneficial ownership → 25%+ disclosure requirements\n"
+        "- HIGH: Single signatories → Joint signing authorities\n"
+        "- MEDIUM: Formatting issues → Professional document structure\n"
+        "- LOW: Minor text improvements → Enhanced clarity\n\n"
+        
+        "OUTPUT REQUIREMENTS:\n"
+        "1. Generate rewrite_instructions for the Document Rewriter Tool\n"
+        "2. Provide specific replacement text for each violation\n"
+        "3. Include detailed compliance explanations\n"
+        "4. Ensure all fixes meet ADGM regulatory standards\n"
+        "5. Generate comprehensive JSON report of all changes made"
+    ),
+    allow_delegation=False,
+    verbose=True,
+    tools=[read_files_tool, rewrite_tool],
     llm=LLM(
         api_key=openai_api_key,
         model="gpt-4o",
