@@ -180,10 +180,10 @@ Each compliance issue is documented with:
 ## Project Structure
 ```
 ADGM-Corporate-Agent/
-├── agents/
-│   ├── document_classifier.py     # Classification agent
-│   ├── red_flag_analyzer.py      # Compliance analysis agent
-│   ├── document_rewriter.py      # Correction agent
+├── agents.py
+│   ├── document_classifier    # Classification agent
+│   ├── red_flag_analyzer      # Compliance analysis agent
+│   ├── document_rewriter      # Correction agent
 ├── tools/
 │   ├── classification_tool.py    # Document type recognition
 │   ├── rag_tool.py              # Regulatory knowledge retrieval
