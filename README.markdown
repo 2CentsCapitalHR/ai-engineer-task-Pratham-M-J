@@ -101,12 +101,12 @@ The system employs a modular, multi-agent architecture to ensure efficient proce
 
 5. **Web Scraping Capability (Not Implemented)**
 
-A web scraping tool was intentionally not implemented for the ADGM Corporate Agent, as the target ADGM government websites (e.g., adgm.com and the regulations portal) are official government resources. However, this capability could be seamlessly integrated to enable the following functionalities:
+  - A web scraping tool was intentionally not implemented for the ADGM Corporate Agent, as the target ADGM government websites (e.g., adgm.com and the regulations portal) are official government resources. However, this capability could be seamlessly integrated to enable the following functionalities:
 
-- **Real-Time Regulatory Updates Monitoring**: Continuously track changes to ADGM regulations and guidelines.
-- **Automatic Knowledge Base Synchronization**: Update the system's regulatory knowledge base with the latest information from official sources.
-- **Template Validation Against Official ADGM Forms**: Ensure document templates align with current ADGM standards.
-- **Regulatory Change Detection and Alert System**: Identify and notify users of significant regulatory updates or amendments.
+  - **Real-Time Regulatory Updates Monitoring**: Continuously track changes to ADGM regulations and guidelines.
+  - **Automatic Knowledge Base Synchronization**: Update the system's regulatory knowledge base with the latest information from official sources.
+  - **Template Validation Against Official ADGM Forms**: Ensure document templates align with current ADGM standards.
+  - **Regulatory Change Detection and Alert System**: Identify and notify users of significant regulatory updates or amendments.
 
 ## Workflow Demonstration
 ### Input Example
